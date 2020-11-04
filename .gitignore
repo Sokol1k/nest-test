@@ -12,12 +12,14 @@ lerna-debug.log*
 
 # OS
 .DS_Store
+data
 
 # Tests
 /coverage
 /.nyc_output
 
 # IDEs and editors
+.env
 /.idea
 .project
 .classpath
