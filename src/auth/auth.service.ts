@@ -2,8 +2,10 @@ import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { Model } from 'mongoose'
 import { InjectModel } from '@nestjs/mongoose'
 import * as bcrypt from 'bcrypt'
+import * as jwt from 'jsonwebtoken'
 import { User, UserDocument } from '../schemas/user.schema'
 import { RegisterDto } from './dto/register.dto'
+import { LoginDto } from './dto/login.dto'
 
 @Injectable()
 export class AuthService {
@@ -22,6 +24,32 @@ export class AuthService {
       registerDto.password = await bcrypt.hash(registerDto.password, 12)
       const data = new this.userModel(registerDto)
       await data.save()
+    } catch (error) {
+      throw error.status ? error : new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+  }
+
+  async login(loginDto: LoginDto): Promise<{ token: string }> {
+    try {
+      const user =  await this.userModel.findOne({ email: loginDto.email })
+
+      if (!user) {
+        throw new HttpException({
+          message: "Invalid login information!"
+        }, HttpStatus.FORBIDDEN)
+      }
+
+      const isMatch = await bcrypt.compare(loginDto.password, user.password)
+
+      if (!isMatch) {
+        throw new HttpException({
+          message: "Invalid login information!"
+        }, HttpStatus.FORBIDDEN)
+      }
+
+      return {
+        token: jwt.sign({ id: user.id, email: user.email, firstName: user.firstName, secondName: user.secondName }, process.env.JWT_SECRET, { expiresIn: '1d' })
+      }
     } catch (error) {
       throw error.status ? error : new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR)
     }
