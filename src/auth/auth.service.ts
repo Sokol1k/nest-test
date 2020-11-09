@@ -7,6 +7,7 @@ import { User, UserDocument } from '../schemas/user.schema'
 import { RegisterDto } from './dto/register.dto'
 import { LoginDto } from './dto/login.dto'
 import { ForgetDto } from './dto/forget.dto'
+import { ResetDto } from './dto/reset.dto'
 import { sendMail } from '../utils/sendMail';
 
 @Injectable()
@@ -72,6 +73,19 @@ export class AuthService {
       await sendMail(forgetDto.email, `${process.env.URL}/reset/${token}`)
 
       user.resetLink = token
+      await user.save()
+    } catch (error) {
+      throw error.status ? error : new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+  }
+
+  async reset(resetDto: ResetDto): Promise<void> {
+    try {
+      const decoded: any = jwt.verify(resetDto.resetLink, process.env.JWT_RESET_SECRET)
+      const user = await this.userModel.findOneAndUpdate(decoded.id, {
+        password: await bcrypt.hash(resetDto.password, 12),
+        resetLink: ''
+      })
       await user.save()
     } catch (error) {
       throw error.status ? error : new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR)

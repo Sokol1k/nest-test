@@ -4,6 +4,7 @@ import { AuthService } from './auth.service'
 import { RegisterDto } from './dto/register.dto'
 import { LoginDto } from './dto/login.dto'
 import { ForgetDto } from './dto/forget.dto'
+import { ResetDto } from './dto/reset.dto'
 
 @Controller('auth')
 export class AuthController {
@@ -28,6 +29,14 @@ export class AuthController {
     await this.authService.forget(forgetDto)
     res.status(HttpStatus.OK).send({
       message: 'A message has been sent to the mail to reset your password'
+    })
+  }
+
+  @Post('reset')
+  async reset(@Body() resetDto: ResetDto, @Res() res: Response): Promise<void> {
+    await this.authService.reset(resetDto)
+    res.status(HttpStatus.OK).send({
+      message: 'Password changed successfully'
     })
   }
 }
