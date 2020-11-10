@@ -4,7 +4,6 @@ import { Match } from '../../decorators/match.decorator'
 export class ResetDto {
   @IsNotEmpty()
   @IsString()
-  @Length(2, 255)
   resetLink: string;
 
   @IsNotEmpty()

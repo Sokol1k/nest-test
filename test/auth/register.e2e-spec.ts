@@ -4,16 +4,22 @@ import * as request from 'supertest';
 import * as mongoose from 'mongoose';
 import { AppModule } from '../../src/app.module'
 import { ValidationPipe } from '../../src/pipes/validation.pipe'
+import { UserDocument, UserSchema } from '../../src/schemas/user.schema'
 
 describe('Register endpoint:', () => {
   let app: INestApplication;
+  let userModel: mongoose.Model<UserDocument>
 
   beforeEach(async () => {
+    await mongoose.connect('mongodb://127.0.0.1:27017/nest-test', { useNewUrlParser: true, useUnifiedTopology: true })
+
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [
         AppModule
       ],
     }).compile();
+
+    userModel = mongoose.model('User', UserSchema)
 
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(new ValidationPipe())
@@ -22,12 +28,7 @@ describe('Register endpoint:', () => {
 
   afterAll(async () => {
     await app.close()
-    await mongoose.connect(
-      'mongodb://127.0.0.1:27017/nest-test',
-      { useNewUrlParser: true, useUnifiedTopology: true },
-      function(){
-        mongoose.connection.db.dropDatabase();
-      })
+    await userModel.findOneAndDelete({ email: 'bob.jones-register@gmail.com' })
   })
 
   it('should create a new user', async (): Promise<void> => {
@@ -36,7 +37,7 @@ describe('Register endpoint:', () => {
       .send({
         firstName: 'Bob',
         secondName: 'Jones',
-        email: 'bob.jones@gmail.com',
+        email: 'bob.jones-register@gmail.com',
         password: '123456',
         confirmPassword: '123456'
       })
@@ -51,7 +52,7 @@ describe('Register endpoint:', () => {
       .send({
         firstName: 'Bob',
         secondName: 'Jones',
-        email: 'bob.jones@gmail.com',
+        email: 'bob.jones-register@gmail.com',
         password: '123456',
         confirmPassword: '123456'
       })
