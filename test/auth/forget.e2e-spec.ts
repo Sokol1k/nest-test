@@ -10,7 +10,9 @@ describe('Forget password endpoint', () => {
   let app: INestApplication
   let userModel: mongoose.Model<UserDocument>
 
-  beforeEach(async () => {
+  beforeAll(async () => {
+    jest.setTimeout(30000)
+
     await mongoose.connect('mongodb://127.0.0.1:27017/nest-test', { useNewUrlParser: true, useUnifiedTopology: true })
 
     const moduleFixture: TestingModule = await Test.createTestingModule({

@@ -11,7 +11,9 @@ describe('Reset password endpoint', () => {
   let userModel: mongoose.Model<UserDocument>
   let resetLink: string
 
-  beforeEach(async () => {
+  beforeAll(async () => {
+    jest.setTimeout(30000)
+
     await mongoose.connect('mongodb://127.0.0.1:27017/nest-test', { useNewUrlParser: true, useUnifiedTopology: true })
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
