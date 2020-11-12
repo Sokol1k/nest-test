@@ -2,8 +2,9 @@ import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config'
 import { MongooseModule } from '@nestjs/mongoose'
 import { AuthenticationMiddleware } from './middlewares/authentication.middleware'
-import { AuthModule } from './auth/auth.module';
-import { ProfileModule } from './profile/profile.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { ProfileModule } from './modules/profile/profile.module';
+import { PostModule } from './modules/post/post.module';
 
 @Module({
   imports: [
@@ -13,13 +14,14 @@ import { ProfileModule } from './profile/profile.module';
       { useNewUrlParser: true, useUnifiedTopology: true }
     ),
     AuthModule,
-    ProfileModule
+    ProfileModule,
+    PostModule
   ]
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(AuthenticationMiddleware)
-      .forRoutes('profile')
+      .forRoutes('profile', 'post')
   }
 }

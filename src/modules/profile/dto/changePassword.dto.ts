@@ -1,10 +1,11 @@
-import { IsNotEmpty, IsString, Length, IsEmail } from 'class-validator'
-import { Match } from '../../decorators/match.decorator'
+import { IsNotEmpty, IsString, Length } from 'class-validator';
+import { Match } from '../../../decorators/match.decorator'
 
-export class ResetDto {
+export class ChangePasswordDto {
   @IsNotEmpty()
   @IsString()
-  resetLink: string;
+  @Length(6, 255)
+  oldPassword: string;
 
   @IsNotEmpty()
   @IsString()

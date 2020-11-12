@@ -3,12 +3,12 @@ import { Model } from 'mongoose'
 import { InjectModel } from '@nestjs/mongoose'
 import * as bcrypt from 'bcrypt'
 import * as jwt from 'jsonwebtoken'
-import { User, UserDocument } from '../schemas/user.schema'
+import { User, UserDocument } from '../../schemas/user.schema'
 import { RegisterDto } from './dto/register.dto'
 import { LoginDto } from './dto/login.dto'
 import { ForgetDto } from './dto/forget.dto'
 import { ResetDto } from './dto/reset.dto'
-import { sendMail } from '../utils/sendMail';
+import { sendMail } from '../../utils/sendMail';
 
 @Injectable()
 export class AuthService {
