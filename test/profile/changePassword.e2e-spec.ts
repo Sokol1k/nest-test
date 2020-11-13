@@ -5,11 +5,20 @@ import * as mongoose from 'mongoose'
 import { AppModule } from '../../src/app.module'
 import { ValidationPipe } from '../../src/pipes/validation.pipe'
 import { UserDocument, UserSchema } from '../../src/schemas/user.schema'
+import { register } from '../utils/register'
+import { login } from '../utils/login'
 
 describe('Change password endpoint', () => {
   let app: INestApplication
   let userModel: mongoose.Model<UserDocument>
   let token: string
+  const userConfig = {
+    firstName: 'Bob',
+    secondName: 'Jones',
+    email: 'bob.jones-profile-change-password@gmail.com',
+    password: '123456',
+    confirmPassword: '123456'
+  }
 
   beforeAll(async () => {
     await mongoose.connect('mongodb://127.0.0.1:27017/nest-test', { useNewUrlParser: true, useUnifiedTopology: true })
@@ -26,29 +35,15 @@ describe('Change password endpoint', () => {
     app.useGlobalPipes(new ValidationPipe())
     await app.init()
 
-    await request(app.getHttpServer())
-      .post('/auth/register')
-      .send({
-        firstName: 'Bob',
-        secondName: 'Jones',
-        email: 'bob.jones-profile-change-password@gmail.com',
-        password: '123456',
-        confirmPassword: '123456'
-      })
+    await register(app, userConfig)
 
-    const res : any = await request(app.getHttpServer())
-      .post('/auth/login')
-      .send({
-        email: 'bob.jones-profile-change-password@gmail.com',
-        password: '123456',
-      })
-
+    const res : any = await login(app, userConfig)
     token = res.body.token
   })
 
   afterAll(async () => {
     await app.close()
-    await userModel.findOneAndDelete({ email: 'bob.jones-profile-change-password@gmail.com' })
+    await userModel.findOneAndDelete({ email: userConfig.email })
   })
 
   it('should change the password', async () : Promise<void> => {
@@ -56,7 +51,7 @@ describe('Change password endpoint', () => {
       .put('/profile/password')
       .set('Authorization', 'bearer ' + token)
       .send({
-        oldPassword: "123456",
+        oldPassword: userConfig.password,
         password: "qwerty",
         confirmPassword: "qwerty"
       })
@@ -71,7 +66,7 @@ describe('Change password endpoint', () => {
       .put('/profile/password')
       .set('Authorization', 'bearer ' + token)
       .send({
-        oldPassword: "123456",
+        oldPassword: userConfig.password,
         password: "qwerty",
         confirmPassword: "qwerty"
       })

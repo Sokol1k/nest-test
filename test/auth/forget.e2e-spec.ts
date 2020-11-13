@@ -5,10 +5,18 @@ import * as mongoose from 'mongoose'
 import { AppModule } from '../../src/app.module'
 import { ValidationPipe } from '../../src/pipes/validation.pipe'
 import { UserDocument, UserSchema } from '../../src/schemas/user.schema'
+import { register } from '../utils/register'
 
 describe('Forget password endpoint', () => {
   let app: INestApplication
   let userModel: mongoose.Model<UserDocument>
+  const userConfig = {
+    firstName: 'Bob',
+    secondName: 'Jones',
+    email: 'bob.jones-forget@gmail.com',
+    password: '123456',
+    confirmPassword: '123456'
+  }
 
   beforeAll(async () => {
     jest.setTimeout(30000)
@@ -26,27 +34,20 @@ describe('Forget password endpoint', () => {
     app = moduleFixture.createNestApplication()
     app.useGlobalPipes(new ValidationPipe())
     await app.init()
-    await request(app.getHttpServer())
-      .post('/auth/register')
-      .send({
-        firstName: 'Bob',
-        secondName: 'Jones',
-        email: 'bob.jones-forget@gmail.com',
-        password: '123456',
-        confirmPassword: '123456'
-      })
+
+    await register(app, userConfig)
   })
 
   afterAll(async () => {
     await app.close()
-    await userModel.findOneAndDelete({ email: 'bob.jones-forget@gmail.com' })
+    await userModel.findOneAndDelete({ email: userConfig.email })
   })
 
   it('should send a message to the mail for reset password', async () : Promise<void> => {
     const res : any = await request(app.getHttpServer())
       .post('/auth/forget')
       .send({
-          email: 'bob.jones-forget@gmail.com',
+          email: userConfig.email,
       })
     expect(res.statusCode).toEqual(200)
     expect(res.body.message).not.toBeUndefined()

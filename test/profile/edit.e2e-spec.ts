@@ -5,11 +5,27 @@ import * as mongoose from 'mongoose'
 import { AppModule } from '../../src/app.module'
 import { ValidationPipe } from '../../src/pipes/validation.pipe'
 import { UserDocument, UserSchema } from '../../src/schemas/user.schema'
+import { register } from '../utils/register'
+import { login } from '../utils/login'
 
 describe('Edit profile endpoint', () => {
   let app: INestApplication
   let userModel: mongoose.Model<UserDocument>
   let token: string
+  const userConfig1 = {
+    firstName: 'Bob',
+    secondName: 'Jones',
+    email: 'bob.jones-profile-edit+1@gmail.com',
+    password: '123456',
+    confirmPassword: '123456'
+  }
+  const userConfig2 = {
+    firstName: 'Bob',
+    secondName: 'Jones',
+    email: 'bob.jones-profile-edit+2@gmail.com',
+    password: '123456',
+    confirmPassword: '123456'
+  }
 
   beforeAll(async () => {
     await mongoose.connect('mongodb://127.0.0.1:27017/nest-test', { useNewUrlParser: true, useUnifiedTopology: true })
@@ -26,40 +42,17 @@ describe('Edit profile endpoint', () => {
     app.useGlobalPipes(new ValidationPipe())
     await app.init()
 
-    await request(app.getHttpServer())
-      .post('/auth/register')
-      .send({
-        firstName: 'Bob',
-        secondName: 'Jones',
-        email: 'bob.jones-profile-edit+1@gmail.com',
-        password: '123456',
-        confirmPassword: '123456'
-      })
+    await register(app, userConfig1)
+    await register(app, userConfig2)
 
-    await request(app.getHttpServer())
-      .post('/auth/register')
-      .send({
-        firstName: 'Bob',
-        secondName: 'Jones',
-        email: 'bob.jones-profile-edit+2@gmail.com',
-        password: '123456',
-        confirmPassword: '123456'
-      })
-
-    const res : any = await request(app.getHttpServer())
-      .post('/auth/login')
-      .send({
-        email: 'bob.jones-profile-edit+1@gmail.com',
-        password: '123456',
-      })
-
+    const res : any = await login(app, userConfig1)
     token = res.body.token
   })
 
   afterAll(async () => {
     await app.close()
-    await userModel.findOneAndDelete({ email: 'bob.jones-profile-edit+1@gmail.com' })
-    await userModel.findOneAndDelete({ email: 'bob.jones-profile-edit+2@gmail.com' })
+    await userModel.findOneAndDelete({ email: userConfig1.email })
+    await userModel.findOneAndDelete({ email: userConfig2.email })
   })
 
   it('should update profile', async () : Promise<void> => {
@@ -69,7 +62,7 @@ describe('Edit profile endpoint', () => {
       .send({
         firstName: 'Bob 1',
         secondName: 'Jones 1',
-        email: 'bob.jones-profile-edit+1@gmail.com',
+        email: userConfig1.email,
       })
     expect(res.statusCode).toEqual(200)
     expect(res.body.message).not.toBeUndefined()
@@ -92,7 +85,7 @@ describe('Edit profile endpoint', () => {
       .send({
         firstName: 'Bob 1',
         secondName: 'Jones 1',
-        email: 'bob.jones-profile-edit+2@gmail.com',
+        email: userConfig2.email,
       })
     expect(res.statusCode).toEqual(403)
     expect(res.body.email).not.toBeUndefined()

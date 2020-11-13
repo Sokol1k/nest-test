@@ -9,6 +9,13 @@ import { UserDocument, UserSchema } from '../../src/schemas/user.schema'
 describe('Register endpoint:', () => {
   let app: INestApplication;
   let userModel: mongoose.Model<UserDocument>
+  const userConfig = {
+    firstName: 'Bob',
+    secondName: 'Jones',
+    email: 'bob.jones-register@gmail.com',
+    password: '123456',
+    confirmPassword: '123456'
+  }
 
   beforeAll(async () => {
     await mongoose.connect('mongodb://127.0.0.1:27017/nest-test', { useNewUrlParser: true, useUnifiedTopology: true })
@@ -28,19 +35,14 @@ describe('Register endpoint:', () => {
 
   afterAll(async () => {
     await app.close()
-    await userModel.findOneAndDelete({ email: 'bob.jones-register@gmail.com' })
+    await userModel.findOneAndDelete({ email: userConfig.email })
   })
 
   it('should create a new user', async (): Promise<void> => {
     const res : any = await request(app.getHttpServer())
       .post('/auth/register')
-      .send({
-        firstName: 'Bob',
-        secondName: 'Jones',
-        email: 'bob.jones-register@gmail.com',
-        password: '123456',
-        confirmPassword: '123456'
-      })
+      .send(userConfig)
+
     expect(res.statusCode).toEqual(201)
     expect(res.body.message).not.toBeUndefined()
     expect(res.body.message).toBe('User has been registered!')
@@ -49,13 +51,8 @@ describe('Register endpoint:', () => {
   it('should return an error that email is not free', async (): Promise<void> => {
     const res : any = await request(app.getHttpServer())
       .post('/auth/register')
-      .send({
-        firstName: 'Bob',
-        secondName: 'Jones',
-        email: 'bob.jones-register@gmail.com',
-        password: '123456',
-        confirmPassword: '123456'
-      })
+      .send(userConfig)
+
     expect(res.statusCode).toEqual(403)
     expect(res.body.email).not.toBeUndefined()
     expect(res.body.email).toBe('This email is not free')

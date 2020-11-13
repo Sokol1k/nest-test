@@ -6,12 +6,22 @@ import { AppModule } from '../../src/app.module'
 import { ValidationPipe } from '../../src/pipes/validation.pipe'
 import { UserDocument, UserSchema } from '../../src/schemas/user.schema'
 import { PostDocument, PostSchema } from '../../src/schemas/post.schema'
+import { register } from '../utils/register'
+import { login } from '../utils/login'
+import { createPost } from '../utils/createPost'
 
 describe('Get all posts endpoint', () => {
   let app: INestApplication
   let userModel: mongoose.Model<UserDocument>
   let postModel: mongoose.Model<PostDocument>
   let token: string
+  const userConfig = {
+    firstName: 'Bob',
+    secondName: 'Jones',
+    email: 'bob.jones-post-get-all@gmail.com',
+    password: '123456',
+    confirmPassword: '123456'
+  }
 
   beforeAll(async () => {
     await mongoose.connect('mongodb://127.0.0.1:27017/nest-test', { useNewUrlParser: true, useUnifiedTopology: true })
@@ -29,37 +39,17 @@ describe('Get all posts endpoint', () => {
     app.useGlobalPipes(new ValidationPipe())
     await app.init()
 
-    await request(app.getHttpServer())
-      .post('/auth/register')
-      .send({
-        firstName: 'Bob',
-        secondName: 'Jones',
-        email: 'bob.jones-post-get-all@gmail.com',
-        password: '123456',
-        confirmPassword: '123456'
-      })
+    await register(app, userConfig)
 
-    const res : any = await request(app.getHttpServer())
-      .post('/auth/login')
-      .send({
-        email: 'bob.jones-post-get-all@gmail.com',
-        password: '123456',
-      })
-
+    const res : any = await login(app, userConfig)
     token = res.body.token
 
-    await request(app.getHttpServer())
-      .post('/post')
-      .set('Authorization', 'bearer ' + token)
-      .send({
-        title: 'title',
-        description: 'description'
-      })
+    await createPost(app, token)
   })
 
   afterAll(async () => {
     await app.close()
-    const user = await userModel.findOneAndDelete({ email: 'bob.jones-post-get-all@gmail.com' })
+    const user = await userModel.findOneAndDelete({ email: userConfig.email })
     await postModel.findOneAndDelete({ userId: user._id })
   })
 

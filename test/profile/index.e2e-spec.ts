@@ -4,11 +4,20 @@ import * as request from 'supertest';
 import * as mongoose from 'mongoose';
 import { AppModule } from '../../src/app.module'
 import { UserDocument, UserSchema } from '../../src/schemas/user.schema'
+import { register } from '../utils/register'
+import { login } from '../utils/login'
 
 describe('Get profile endpoint', () => {
   let app: INestApplication
   let userModel: mongoose.Model<UserDocument>
   let token: string
+  const userConfig = {
+    firstName: 'Bob',
+    secondName: 'Jones',
+    email: 'bob.jones-profile-index@gmail.com',
+    password: '123456',
+    confirmPassword: '123456'
+  }
 
   beforeAll(async () => {
     await mongoose.connect('mongodb://127.0.0.1:27017/nest-test', { useNewUrlParser: true, useUnifiedTopology: true })
@@ -24,29 +33,15 @@ describe('Get profile endpoint', () => {
     app = moduleFixture.createNestApplication();
     await app.init()
 
-    await request(app.getHttpServer())
-      .post('/auth/register')
-      .send({
-        firstName: 'Bob',
-        secondName: 'Jones',
-        email: 'bob.jones-profile-index@gmail.com',
-        password: '123456',
-        confirmPassword: '123456'
-      })
+    await register(app, userConfig)
 
-    const res : any = await request(app.getHttpServer())
-      .post('/auth/login')
-      .send({
-        email: 'bob.jones-profile-index@gmail.com',
-        password: '123456',
-      })
-
+    const res : any = await login(app, userConfig)
     token = res.body.token
   })
 
   afterAll(async () => {
     await app.close()
-    await userModel.findOneAndDelete({ email: 'bob.jones-profile-index@gmail.com' })
+    await userModel.findOneAndDelete({ email: userConfig.email })
   })
 
   it('should return user profile', async () : Promise<void> => {

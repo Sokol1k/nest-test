@@ -5,11 +5,20 @@ import * as mongoose from 'mongoose'
 import { AppModule } from '../../src/app.module'
 import { ValidationPipe } from '../../src/pipes/validation.pipe'
 import { UserDocument, UserSchema } from '../../src/schemas/user.schema'
+import { register } from '../utils/register'
+import { forget } from '../utils/forget'
 
 describe('Reset password endpoint', () => {
   let app: INestApplication
   let userModel: mongoose.Model<UserDocument>
   let resetLink: string
+  const userConfig = {
+    firstName: 'Bob',
+    secondName: 'Jones',
+    email: 'bob.jones-reset@gmail.com',
+    password: '123456',
+    confirmPassword: '123456'
+  }
 
   beforeAll(async () => {
     jest.setTimeout(30000)
@@ -27,27 +36,19 @@ describe('Reset password endpoint', () => {
     app = moduleFixture.createNestApplication()
     app.useGlobalPipes(new ValidationPipe())
     await app.init()
-    await request(app.getHttpServer())
-      .post('/auth/register')
-      .send({
-        firstName: 'Bob',
-        secondName: 'Jones',
-        email: 'bob.jones-reset@gmail.com',
-        password: '123456',
-        confirmPassword: '123456'
-      })
-    await request(app.getHttpServer())
-      .post('/auth/forget')
-      .send({
-          email: 'bob.jones-reset@gmail.com',
-      })
-    const user = await userModel.findOne({ email: 'bob.jones-reset@gmail.com' })
+
+    await register(app, userConfig)
+
+    await forget(app, userConfig)
+
+    const user = await userModel.findOne({ email: userConfig.email })
+
     resetLink = user.resetLink
   })
 
   afterAll(async () => {
     await app.close()
-    await userModel.findOneAndDelete({ email: 'bob.jones-reset@gmail.com' })
+    await userModel.findOneAndDelete({ email: userConfig.email })
   })
 
   it('should restore password', async () : Promise<void> => {

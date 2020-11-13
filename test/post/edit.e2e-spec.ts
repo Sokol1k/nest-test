@@ -6,6 +6,9 @@ import { AppModule } from '../../src/app.module'
 import { ValidationPipe } from '../../src/pipes/validation.pipe'
 import { UserDocument, UserSchema } from '../../src/schemas/user.schema'
 import { PostDocument, PostSchema } from '../../src/schemas/post.schema'
+import { register } from '../utils/register'
+import { login } from '../utils/login'
+import { createPost } from '../utils/createPost'
 
 describe('Edit post endpoint', () => {
   let app: INestApplication
@@ -15,6 +18,20 @@ describe('Edit post endpoint', () => {
   let token2: string
   let postId1: string
   let postId2: string
+  const userConfig1 = {
+    firstName: 'Bob',
+    secondName: 'Jones',
+    email: 'bob.jones-post-edit+1@gmail.com',
+    password: '123456',
+    confirmPassword: '123456'
+  }
+  const userConfig2 = {
+    firstName: 'Bob',
+    secondName: 'Jones',
+    email: 'bob.jones-post-edit+2@gmail.com',
+    password: '123456',
+    confirmPassword: '123456'
+  }
 
   beforeAll(async () => {
     await mongoose.connect('mongodb://127.0.0.1:27017/nest-test', { useNewUrlParser: true, useUnifiedTopology: true })
@@ -32,65 +49,22 @@ describe('Edit post endpoint', () => {
     app.useGlobalPipes(new ValidationPipe())
     await app.init()
 
-    await request(app.getHttpServer())
-      .post('/auth/register')
-      .send({
-        firstName: 'Bob',
-        secondName: 'Jones',
-        email: 'bob.jones-post-edit+1@gmail.com',
-        password: '123456',
-        confirmPassword: '123456'
-      })
+    await register(app, userConfig1)
+    await register(app, userConfig2)
 
-    await request(app.getHttpServer())
-      .post('/auth/register')
-      .send({
-        firstName: 'Bob',
-        secondName: 'Jones',
-        email: 'bob.jones-post-edit+2@gmail.com',
-        password: '123456',
-        confirmPassword: '123456'
-      })
-
-    const res1: any = await request(app.getHttpServer())
-      .post('/auth/login')
-      .send({
-        email: 'bob.jones-post-edit+1@gmail.com',
-        password: '123456',
-      })
-
+    const res1: any = await login(app, userConfig1)
+    const res2 : any = await login(app, userConfig2)
     token1 = res1.body.token
-
-    const res2 : any = await request(app.getHttpServer())
-      .post('/auth/login')
-      .send({
-        email: 'bob.jones-post-edit+2@gmail.com',
-        password: '123456',
-      })
-
     token2 = res2.body.token
 
-    await request(app.getHttpServer())
-      .post('/post')
-      .set('Authorization', 'bearer ' + token1)
-      .send({
-        title: 'title',
-        description: 'description'
-      })
+    await createPost(app, token1)
+    await createPost(app, token2)
 
-    await request(app.getHttpServer())
-      .post('/post')
-      .set('Authorization', 'bearer ' + token2)
-      .send({
-        title: 'title',
-        description: 'description'
-      })
-
-    const user1 = await userModel.findOne({ email: 'bob.jones-post-edit+1@gmail.com' })
+    const user1 = await userModel.findOne({ email: userConfig1.email })
     const post1 = await postModel.findOne({ userId: user1._id})
     postId1 = post1._id
 
-    const user2 = await userModel.findOne({ email: 'bob.jones-post-edit+2@gmail.com' })
+    const user2 = await userModel.findOne({ email: userConfig2.email })
     const post2 = await postModel.findOne({ userId: user2._id})
     postId2 = post2._id
   })
@@ -98,10 +72,10 @@ describe('Edit post endpoint', () => {
   afterAll(async () => {
     await app.close()
 
-    const user1 = await userModel.findOneAndDelete({ email: 'bob.jones-post-edit+1@gmail.com' })
+    const user1 = await userModel.findOneAndDelete({ email: userConfig1.email })
     await postModel.findOneAndDelete({ userId: user1._id })
 
-    const user2 = await userModel.findOneAndDelete({ email: 'bob.jones-post-edit+2@gmail.com' })
+    const user2 = await userModel.findOneAndDelete({ email: userConfig2.email })
     await postModel.findOneAndDelete({ userId: user2._id })
   })
 
