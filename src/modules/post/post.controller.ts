@@ -3,6 +3,7 @@ import { IRequest } from '../../interfaces/request.interface'
 import { Response } from 'express'
 import { PostService } from './post.service'
 import { PostDto } from './dto/post.dto'
+import { ParamsDto } from './dto/params.dto'
 import { Schema } from 'mongoose'
 
 @Controller('post')
@@ -17,7 +18,7 @@ export class PostController {
 
   @Get(':id')
   async get(
-    @Param() params: { id: Schema.Types.ObjectId },
+    @Param() params: ParamsDto,
     @Res() res: Response
   ): Promise<void> {
     const post = await this.postService.get(params.id)
@@ -37,7 +38,7 @@ export class PostController {
   @Put(':id')
   async update(
     @Req() req: IRequest,
-    @Param() params: { id: Schema.Types.ObjectId },
+    @Param() params: ParamsDto,
     @Body() postDto: PostDto,
     @Res() res: Response
   ): Promise<void> {
@@ -48,7 +49,7 @@ export class PostController {
   @Delete(':id')
   async delete(
     @Req() req: IRequest,
-    @Param() params: { id: Schema.Types.ObjectId },
+    @Param() params: ParamsDto,
     @Res() res: Response
   ): Promise<void> {
     await this.postService.delete(req.user.id, params.id)

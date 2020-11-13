@@ -7,7 +7,7 @@ import { ValidationPipe } from '../../src/pipes/validation.pipe'
 import { UserDocument, UserSchema } from '../../src/schemas/user.schema'
 import { PostDocument, PostSchema } from '../../src/schemas/post.schema'
 
-describe('Edit post endpoint', () => {
+describe('Delete post endpoint', () => {
   let app: INestApplication
   let userModel: mongoose.Model<UserDocument>
   let postModel: mongoose.Model<PostDocument>
@@ -105,32 +105,20 @@ describe('Edit post endpoint', () => {
     await postModel.findOneAndDelete({ userId: user2._id })
   })
 
-  it('should edit a post', async () : Promise<void> => {
+  it('should delete a post', async () : Promise<void> => {
     const res : any = await request(app.getHttpServer())
-      .put(`/post/${postId1}`)
+      .delete(`/post/${postId1}`)
       .set('Authorization', 'bearer ' + token1)
-      .send({
-        title: 'title1',
-        description: 'description1'
-      })
 
     expect(res.statusCode).toEqual(200)
-    expect(res.body._id).not.toBeUndefined()
-    expect(res.body.title).not.toBeUndefined()
-    expect(res.body.description).not.toBeUndefined()
-    expect(res.body.userId).not.toBeUndefined()
-    expect(res.body.createdAt).not.toBeUndefined()
-    expect(res.body.updatedAt).not.toBeUndefined()
+    expect(res.body.message).not.toBeUndefined()
+    expect(res.body.message).toBe('Post has been removed')
   })
 
   it('should return an error because the user does not have permission to edit this post', async () : Promise<void> => {
     const res : any = await request(app.getHttpServer())
-      .put(`/post/${postId2}`)
+      .delete(`/post/${postId2}`)
       .set('Authorization', 'bearer ' + token1)
-      .send({
-        title: 'title1',
-        description: 'description1'
-      })
 
     expect(res.statusCode).toEqual(403)
     expect(res.body.message).not.toBeUndefined()
@@ -139,12 +127,8 @@ describe('Edit post endpoint', () => {
 
   it('should return an error because no such post exists', async () : Promise<void> => {
     const res : any = await request(app.getHttpServer())
-      .put('/post/1')
+      .delete('/post/1')
       .set('Authorization', 'bearer ' + token1)
-      .send({
-        title: 'title1',
-        description: 'description1'
-      })
 
     expect(res.statusCode).toEqual(422)
     expect(res.body.id).not.toBeUndefined()
@@ -152,20 +136,10 @@ describe('Edit post endpoint', () => {
 
   it('should return an error that the user is not authorized', async () : Promise<void> => {
     const res : any = await request(app.getHttpServer())
-      .put(`/post/${postId1}`)
+      .delete(`/post/${postId1}`)
 
     expect(res.statusCode).toEqual(401)
     expect(res.body.message).not.toBeUndefined()
     expect(res.body.message).toBe('Access Denied')
-  })
-
-  it('should return an error that the validation failed', async () : Promise<void> => {
-    const res : any = await request(app.getHttpServer())
-      .put(`/post/${postId1}`)
-      .set('Authorization', 'bearer ' + token1)
-
-    expect(res.statusCode).toEqual(422)
-    expect(res.body.title).not.toBeUndefined()
-    expect(res.body.description).not.toBeUndefined()
   })
 })

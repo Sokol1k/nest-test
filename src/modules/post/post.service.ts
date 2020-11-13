@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Schema } from 'mongoose';
 import { Post, PostDocument } from '../../schemas/post.schema';
 import { PostDto } from './dto/post.dto'
+import { ParamsDto } from './dto/params.dto'
 
 @Injectable()
 export class PostService {
@@ -17,7 +18,7 @@ export class PostService {
     }
   }
 
-  async get(id: Schema.Types.ObjectId): Promise<PostDocument> {
+  async get(id: string): Promise<PostDocument> {
     try {
       const post = await this.postModel.findById(id).populate('userId')
       return post
@@ -39,7 +40,7 @@ export class PostService {
     }
   }
 
-  async edit(userId: string, id: Schema.Types.ObjectId, postDto: PostDto): Promise<PostDocument> {
+  async edit(userId: string, id: string, postDto: PostDto): Promise<PostDocument> {
     try {
       const post = await this.postModel.findById(id).populate('userId')
 
@@ -64,7 +65,7 @@ export class PostService {
     }
   }
 
-  async delete(userId: string, id: Schema.Types.ObjectId): Promise<void> {
+  async delete(userId: string, id: string): Promise<void> {
     try {
       const post = await this.postModel.findById(id).populate('userId')
 

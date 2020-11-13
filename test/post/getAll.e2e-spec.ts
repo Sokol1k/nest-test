@@ -70,7 +70,7 @@ describe('Get all posts endpoint', () => {
 
     expect(res.statusCode).toEqual(200)
     expect(Array.isArray(res.body)).toBeTruthy()
-    expect(res.body.length).toEqual(1)
+    expect(res.body.length).not.toEqual(0)
   })
 
   it('should return an error that the user is not authorized', async () : Promise<void> => {

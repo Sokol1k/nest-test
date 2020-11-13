@@ -90,4 +90,13 @@ describe('Get post by id endpoint', () => {
     expect(res.body.message).not.toBeUndefined()
     expect(res.body.message).toBe('Access Denied')
   })
+
+  it('should return an error that the validation failed', async () : Promise<void> => {
+    const res : any = await request(app.getHttpServer())
+      .get('/post/1')
+      .set('Authorization', 'bearer ' + token)
+
+    expect(res.statusCode).toEqual(422)
+    expect(res.body.id).not.toBeUndefined()
+  })
 })
