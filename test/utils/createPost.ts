@@ -1,7 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 
-export async function createPost(app: INestApplication, token: any) {
+export async function createPost(app: INestApplication, token: string) {
   await request(app.getHttpServer())
     .post('/post')
     .set('Authorization', 'bearer ' + token)

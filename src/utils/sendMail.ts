@@ -11,7 +11,7 @@ export const sendMail = async (to, html) => {
 
   const transporter = nodemailer.createTransport(config)
   await transporter.sendMail({
-    from: '<danil.sokolovskyi@computools.com>',
+    from: `<${process.env.MAILER_USER}>`,
     to,
     subject: 'Reset Password',
     html

@@ -21,7 +21,10 @@ describe('Change password endpoint', () => {
   }
 
   beforeAll(async () => {
-    await mongoose.connect('mongodb://127.0.0.1:27017/nest-test', { useNewUrlParser: true, useUnifiedTopology: true })
+    await mongoose.connect(
+      `mongodb://${process.env.MONGO_HOST}:${process.env.MONGO_PORT}/${process.env.MONGO_TEST_DATABASE}`,
+      { useNewUrlParser: true, useUnifiedTopology: true }
+    )
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [

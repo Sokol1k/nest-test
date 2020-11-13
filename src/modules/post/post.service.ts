@@ -3,7 +3,6 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Schema } from 'mongoose';
 import { Post, PostDocument } from '../../schemas/post.schema';
 import { PostDto } from './dto/post.dto'
-import { ParamsDto } from './dto/params.dto'
 
 @Injectable()
 export class PostService {

@@ -10,7 +10,10 @@ import { PostModule } from './modules/post/post.module';
   imports: [
     ConfigModule.forRoot(),
     MongooseModule.forRoot(
-      `mongodb://${process.env.MONGO_HOST}:${process.env.MONGO_PORT}/${process.env.MONGO_DATABASE}`,
+      `mongodb://${process.env.MONGO_HOST}:${process.env.MONGO_PORT}/${
+        process.env.NODE_ENV === 'test' ?
+        process.env.MONGO_TEST_DATABASE :
+        process.env.MONGO_DATABASE}`,
       { useNewUrlParser: true, useUnifiedTopology: true }
     ),
     AuthModule,
