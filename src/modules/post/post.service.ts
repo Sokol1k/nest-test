@@ -10,7 +10,7 @@ export class PostService {
 
   async getAll(): Promise<PostDocument[]> {
     try {
-      const posts = await this.postModel.find().populate('userId')
+      const posts = await this.postModel.find().populate('userId', '-password')
       return posts
     } catch (error) {
       throw error.status ? error : new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR)
@@ -19,7 +19,7 @@ export class PostService {
 
   async get(id: string): Promise<PostDocument> {
     try {
-      const post = await this.postModel.findById(id).populate('userId')
+      const post = await this.postModel.findById(id).populate('userId', '-password')
       return post
     } catch (error) {
       throw error.status ? error : new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR)
@@ -41,7 +41,7 @@ export class PostService {
 
   async edit(userId: string, id: string, postDto: PostDto): Promise<PostDocument> {
     try {
-      const post = await this.postModel.findById(id).populate('userId')
+      const post = await this.postModel.findById(id).populate('userId', '-password')
 
       if (!post) {
         throw new HttpException({
@@ -66,7 +66,7 @@ export class PostService {
 
   async delete(userId: string, id: string): Promise<void> {
     try {
-      const post = await this.postModel.findById(id).populate('userId')
+      const post = await this.postModel.findById(id).populate('userId', '-password')
 
       if (!post) {
         throw new HttpException({
